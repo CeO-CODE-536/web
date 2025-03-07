@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botón de Pedido</title>
+    <link rel="icon" href="../vista/img/logo2.png" type="image/png" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #222;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        .button-container {
+            position: relative;
+            width: 60vw;
+            max-width: 220px;
+            height: 60vw;
+            max-height: 220px;
+            background: radial-gradient(circle, #ff3b30, #c62828);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
+            border: 4px solid #fff;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .option-button {
+            position: absolute;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 2px solid white;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+        .option-button i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        .option-button:hover {
+            background: linear-gradient(145deg, #007BFF, #0056b3);
+        }
+        .pedir {
+            background: linear-gradient(145deg, #007BFF, #0056b3);
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .cuenta {
+            background: linear-gradient(145deg, #28A745, #1e7e34);
+            bottom: 15%;
+            left: 25%;
+        }
+        .cancelar {
+            background: linear-gradient(145deg, #DC3545, #b21f2d);
+            bottom: 15%;
+            right: 25%;
+        }
+        .pay {
+            background: linear-gradient(145deg, #FFC107, #e0a800);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .mesa-input {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid white;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            width: 80%;
+            max-width: 150px;
+        }
+        .mesa-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Estilo de la notificación emergente */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28A745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="button-container">
+        <!-- Campo para ingresar el número de mesa -->
+        <input type="number" id="mesa" class="mesa-input" placeholder="Número de mesa" min="1" required />
+
+        <!-- Botones -->
+        <button class="option-button pedir" onclick="showMessage('pedir')">
+            <i class="fas fa-shopping-cart"></i>
+            Pedir
+        </button>
+        <button class="option-button cuenta" onclick="showMessage('cuenta')">
+            <i class="fas fa-money-bill-wave"></i>
+            Cuenta
+        </button>
+        <button class="option-button cancelar" onclick="showMessage('cancelar')">
+            <i class="fas fa-times"></i>
+            Cancelar
+        </button>
+        <button class="option-button pay" onclick="showMessage('pagar')">
+            <i class="fas fa-credit-card"></i>
+            Pay
+        </button>
+    </div>
+
+    <!-- Notificación emergente -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        function showMessage(accion) {
+            const mesa = document.getElementById('mesa').value;
+
+            // Validar que se haya ingresado un número de mesa
+            if (!mesa) {
+                alert('Por favor, ingresa el número de mesa.');
+                return;
+            }
+
+            // Crear el mensaje según la acción
+            let msg = '';
+            switch (accion) {
+                case 'pedir':
+                    msg = `Mesa ${mesa}: Has pedido un producto.`;
+                    break;
+                case 'cuenta':
+                    msg = `Mesa ${mesa}: Has solicitado la cuenta.`;
+                    break;
+                case 'cancelar':
+                    msg = `Mesa ${mesa}: Has cancelado el pedido.`;
+                    break;
+                case 'pagar':
+                    msg = `Mesa ${mesa}: Has realizado el pago.`;
+                    break;
+                default:
+                    msg = `Mesa ${mesa}: Acción no reconocida.`;
+            }
+
+            // Guardar el mensaje en localStorage
+            localStorage.setItem('mensaje', msg);
+
+            // Mostrar la notificación
+            const notification = document.getElementById("notification");
+            notification.innerText = msg;
+            notification.classList.add("show");
+            setTimeout(() => {
+                notification.classList.remove("show");
+                localStorage.removeItem('mensaje'); // Eliminar el mensaje después de mostrarlo
+            }, 3000); // La notificación se oculta después de 3 segundos
+        }
+
+        // Verificar compatibilidad con localStorage
+        if (typeof(Storage) === "undefined") {
+            alert("Tu navegador no soporta localStorage. Algunas funciones pueden no estar disponibles.");
+        }
+    </script>
+</body>
+</html>
