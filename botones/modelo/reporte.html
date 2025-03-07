@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte de Ventas</title>
+  <link rel="icon" href="../vista/img/logo2.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: #F4F6F9;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .header {
+      background-color: #2C3E50;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .header h1 {
+      font-size: 2em;
+    }
+
+    .main-content {
+      padding: 10px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .card {
+      background-color: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 100%;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: #2C3E50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+      background-color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #2C3E50;
+      color: white;
+      font-size: 1em;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .chart-container {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      width: 80%;  
+      height: 400px;
+      max-width: 800px;  
+    }
+
+    .footer {
+      background-color: #2C3E50;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      position: relative;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 400px;
+      margin-top: 20px;
+    }
+
+    .download-btn, .back-btn {
+      background-color: #3498DB;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+
+    .download-btn:hover {
+      background-color: #2980B9;
+    }
+
+    .back-btn {
+      background-color: #E74C3C;
+      font-size: 16px;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-transform: uppercase;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background-color: #C0392B;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.6em;
+      }
+
+      .main-content {
+        padding: 5px;
+      }
+
+      .card {
+        padding: 10px;
+      }
+
+      table {
+        font-size: 0.9em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Reporte de Ventas</h1>
+  </div>
+
+  <div class="main-content">
+    <div class="card">
+      <h3>Resumen de Ventas</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad Vendida</th>
+            <th>Ingresos Totales</th>
+          </tr>
+        </thead>
+        <tbody id="reporteBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="chart-container">
+        <canvas id="ventasChart"></canvas>
+      </div>
+    </div>
+
+    <div class="btn-container">
+      <a href="../modelo/menu.html" class="btn-map">
+        <button class="back-btn">Atrás</button>
+      </a>
+      <button class="download-btn" id="downloadBtn">Descargar Reporte</button>
+    </div>
+  </div>
+
+  <div class="footer"></div>
+
+  <script>
+    // 1) Leer pedidos
+    const pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
+
+    // 2) Agrupar ventas
+    function agruparVentasPorProducto(pedidos) {
+      const mapa = {};
+
+      pedidos.forEach(pedido => {
+        pedido.productos.forEach(prod => {
+          if (!mapa[prod.nombre]) {
+            mapa[prod.nombre] = { cantidad: 0, totalAcumulado: 0 };
+          }
+          mapa[prod.nombre].cantidad += prod.cantidad;
+          mapa[prod.nombre].totalAcumulado += prod.total;
+        });
+      });
+
+      return Object.keys(mapa).map(nombre => ({
+        producto: nombre,
+        cantidad: mapa[nombre].cantidad,
+        total: mapa[nombre].totalAcumulado
+      }));
+    }
+
+    const ventasPorProducto = agruparVentasPorProducto(pedidos);
+
+    // 3) Llenar la tabla
+    const reporteBody = document.getElementById("reporteBody");
+    reporteBody.innerHTML = ventasPorProducto.map(venta => `  
+      <tr>
+        <td>${venta.producto}</td>
+        <td>${venta.cantidad}</td>
+        <td>$${venta.total.toFixed(2)}</td>
+      </tr>
+    `).join("");
+
+    // Función para generar colores aleatorios
+    function generarColorAleatorio() {
+      const letras = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letras[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // 4) Generar gráfica con Chart.js
+    const ctx = document.getElementById("ventasChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ventasPorProducto.map(v => v.producto),
+        datasets: [{
+          label: "Cantidad Vendida",
+          data: ventasPorProducto.map(v => v.cantidad),
+          backgroundColor: ventasPorProducto.map(() => generarColorAleatorio()),  // Colores aleatorios para cada barra
+          borderColor: ventasPorProducto.map(() => 'rgba(0, 0, 0, 0.2)'), // Colores de borde (opcional)
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Función para descargar el reporte como archivo .txt
+    document.getElementById("downloadBtn").addEventListener("click", function() {
+      const reportContent = ventasPorProducto.map(venta => `${venta.producto} - Cantidad: ${venta.cantidad} - Ingresos: $${venta.total.toFixed(2)}`).join("\n");
+      const blob = new Blob([reportContent], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'reporte_ventas.txt';
+      link.click();
+    });
+  </script>
+</body>
+</html>

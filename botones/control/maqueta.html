@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maqueta Mejorada</title>
+   <!-- Favicon con una imagen PNG -->
+   <link rel="icon" href="../vista/img/logo2.png" type="image/png">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fefefd; /* Crema */
+      color: #3E3E3E; /* Gris oscuro */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      width: 100%;
+      text-align: center;
+      background-color: #D1C4A1; /* Beige claro */
+      color: #3E3E3E;
+      padding: 15px 0;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-logo {
+      position: absolute;
+      left: 20px;
+      top: 15px;
+      height: 40px;
+    }
+
+    .contenedor-imagen {
+      position: relative;
+      text-align: center;
+      margin: 20px;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .contenedor-imagen img {
+      width: 100%;
+      height: auto;
+      border: 5px solid #D1C4A1; /* Beige claro */
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .mesa {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: #FFF5E1; /* Crema */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #D1C4A1; /* Beige claro */
+      font-weight: bold;
+      border: 2px solid #D1C4A1; /* Beige claro */
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
+      border-radius: 50%;
+    }
+
+    .mesa.ocupada {
+      background-color: #D1C4A1; /* Beige claro */
+      color: white;
+    }
+
+    .button-container {
+      margin: 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .button-container a {
+      text-decoration: none;
+      padding: 10px 20px;
+      background-color: #D1C4A1; /* Beige claro */
+      color: white;
+      border-radius: 5px;
+      font-size: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .button-container a:hover {
+      background-color: #A79B72; /* Beige más oscuro */
+      transform: scale(1.05);
+    }
+
+    footer {
+      width: 100%;
+      text-align: center;
+      background-color: #A79B72; /* Beige más oscuro */
+      color: white;
+      padding: 10px 0;
+      position: fixed;
+      bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="../vista/img/logo.png" alt="Logo" class="header-logo">
+    Vista de Maqueta
+  </header>
+
+  <div class="contenedor-imagen">
+    <img src="../vista/img/restaurant-3d.png" alt="Imagen 3D del restaurante">
+
+    <!-- Posicionamiento en el lado derecho de la imagen, mesas redondas -->
+    <div class="mesa" style="top: 10%; right: 5%;">M1</div>
+    <div class="mesa" style="top: 20%; right: 5%;">M2</div>
+    <div class="mesa" style="top: 30%; right: 5%;">M3</div>
+    <div class="mesa" style="top: 40%; right: 5%;">M4</div>
+    <div class="mesa" style="top: 50%; right: 5%;">M5</div>
+    <div class="mesa" style="top: 60%; right: 5%;">M6</div>
+    <div class="mesa" style="top: 70%; right: 5%;">M7</div>
+    <div class="mesa" style="top: 80%; right: 5%;">M8</div>
+  </div>
+
+  <div class="button-container">
+    <a href="../modelo/pedidos.html" title="Cerrar sesión actual">Anterior</a>
+    <a href="../control/maqueta.html" title="Abrir el mapa de la maqueta">Mapa</a>
+  </div>
+
+  <script type="module">
+    // Importar e inicializar Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGtG6vNoWUqkq94tYUevF875kJ7dBT7jE",
+      authDomain: "restaurateceo.firebaseapp.com",
+      databaseURL: "https://restaurateceo-default-rtdb.firebaseio.com",
+      projectId: "restaurateceo",
+      storageBucket: "restaurateceo.firebasestorage.app",
+      messagingSenderId: "439218262692",
+      appId: "1:439218262692:web:d2dee432cc762e7f188c31",
+      measurementId: "G-GKH9M75BCL"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Datos de mesas
+    const mesas = document.querySelectorAll('.mesa');
+
+    // Activar aleatoriamente las mesas al cargar la página
+    mesas.forEach((mesa, index) => {
+      const mesaId = `mesa_${index + 1}`;
+
+      if (Math.random() < 0.5) { // 50% de probabilidad de estar ocupada
+        mesa.classList.add('ocupada');
+      }
+
+      // Guardar estado en Firebase al hacer clic
+      mesa.addEventListener('click', () => {
+        mesa.classList.toggle('ocupada');
+        const isOcupada = mesa.classList.contains('ocupada');
+        set(ref(database, `mesas/${mesaId}`), {
+          ocupada: isOcupada
+        });
+      });
+    });
+  </script>
+</body>
+</html>

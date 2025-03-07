@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meseros</title>
+  
+  <!-- Add Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js"></script>
+
+  <style>
+    /* Variables de colores */
+    :root {
+      --primary-color: #6F4F1F; /* Café oscuro */
+      --secondary-color: #D9C9A2; /* Beige claro */
+      --bg-color: #FAF3E0; /* Beige suave */
+      --white: #FFF;
+      --gray: #777;
+      --hover-color: #E4D1B9; /* Beige ligeramente más oscuro para hover */
+    }
+
+    /* Estilos generales */
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(45deg, var(--bg-color), var(--bg-color)); /* Degradado entre café y beige */
+      color: #333;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-size: 200% 200%; /* Para difuminar el fondo */
+      animation: gradientAnimation 10s ease infinite; /* Animación para el degradado */
+    }
+
+    @keyframes gradientAnimation {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      background-color: var(--white);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: var(--primary-color);
+      color: var(--white);
+    }
+
+    tr:nth-child(even) {
+      background-color: var(--hover-color);
+    }
+
+    tr:hover {
+      background-color: var(--secondary-color);
+      color: var(--white);
+    }
+
+    .no-records {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: var(--gray);
+    }
+
+    .button-container-group {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .btn-link {
+      padding: 10px 20px;
+      background-color: var(--secondary-color);
+      color: var(--white);
+      text-decoration: none;
+      font-size: 1em;
+      font-weight: bold;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .btn-link:hover {
+      background-color: var(--primary-color);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .btn-link:active {
+      background-color: #A0522D;
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Lista Meseros</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Turno</th>
+          <th>Contacto</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="meseroTable">
+        <!-- Los datos serán añadidos dinámicamente -->
+      </tbody>
+    </table>
+    <div class="button-container-group">
+      <a href="../vista/bienvenidaMe.html" class="btn-link">Ir a inicio</a>
+      <a href="../modelo/mesas.html" class="btn-link">Atender</a>
+      <a href="../vista/index.html" class="btn-link">Cerrar sesion</a>
+    </div>      
+  </div>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGtG6vNoWUqkq94tYUevF875kJ7dBT7jE",
+      authDomain: "restaurateceo.firebaseapp.com",
+      databaseURL: "https://restaurateceo-default-rtdb.firebaseio.com",
+      projectId: "restaurateceo",
+      storageBucket: "restaurateceo.firebasestorage.app",
+      messagingSenderId: "439218262692",
+      appId: "1:439218262692:web:d2dee432cc762e7f188c31",
+      measurementId: "G-GKH9M75BCL"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Datos de los meseros
+   const meseroTable = document.getElementById('meseroTable');
+    const meseros = [
+      { nombre: "Juan Pérez", turno: "Mañana", contacto: "555-1234" },
+      { nombre: "María López", turno: "Tarde", contacto: "555-5678" },
+      { nombre: "Carlos García", turno: "Noche", contacto: "555-8765" }
+    ];
+
+    // Renderizar la tabla
+    const renderTable = () => {
+      console.log("Meseros:", meseros); // Debugging log to check if meseros data is loaded
+      meseroTable.innerHTML = meseros.length
+        ? meseros.map((mesero, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${mesero.nombre}</td>
+              <td>${mesero.turno}</td>
+              <td>${mesero.contacto}</td>
+              <td>
+                <button 
+                  class="btn-link" 
+                  aria-label="Botón ${index + 1} asignado a ${mesero.nombre}" 
+                  onclick="assignButtonToWorker(${index})">
+                  Botón ${index + 1}
+                </button>
+              </td>
+            </tr>
+          `).join('')
+        : `<tr><td colspan="5" class="no-records">No hay registros disponibles.</td></tr>`;
+    };
+
+    // Asignar botón al trabajador
+    const assignButtonToWorker = (index) => {
+      const trabajador = meseros[index].nombre;
+      const botonNumero = index + 1; // El número del botón
+      alert(`Botón ${botonNumero} asignado a: ${trabajador}`);
+    };
+
+    // Inicializar tabla
+    renderTable();
+  </script>
+</body>
+</html>

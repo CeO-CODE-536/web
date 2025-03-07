@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurante</title>
+   <!-- Favicon con una imagen PNG -->
+   <link rel="icon" href="../vista/img/logo2.png" type="image/png">
+
+  <style>
+    /* Estilo general */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Carrusel de fondo */
+    .background-carousel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .background-carousel img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .background-carousel img.active {
+      opacity: 1;
+    }
+
+    /* Contenedor principal */
+    .container {
+      text-align: center;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    h1 {
+      font-size: 2em;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+    }
+
+    p {
+      font-size: 1.2em;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Botones */
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 15px 25px;
+      font-size: 1em;
+      color: #ffffff;
+      background-color: #03a9f4;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #0288d1;
+    }
+
+    .admin {
+      background-color: #ff5722;
+    }
+
+    .admin:hover {
+      background-color: #e64a19;
+    }
+
+    #role-message {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-carousel" id="background-carousel">
+    <img src="https://www.shutterstock.com/image-photo/portrait-office-woman-laptop-glasses-600nw-2463696283.jpg" alt="Imagen 1" class="active">
+    <img src="https://es.snhu.edu/img/article/que-hace-un-administrador-de-empresas.webp" alt="Imagen 2">
+    <img src="https://jocejob.com/wp-content/uploads/adminstrador-de-empresas-que-es-sueldo-y-funciones.jpg" alt="Imagen 3">
+  </div>
+
+  <div class="container" id="app">
+    <!-- Contenido dinámico -->
+    <h1 style="font-size: 3em; font-style: italic; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);">Bienvenido Administrador</h1>
+    <div class="buttons">
+      <button class="button admin" onclick="selectRole('Administrador')">Iniciar</button>
+    </div>
+    <p id="role-message"></p>
+  </div>
+
+  <script>
+    // Cambiar automáticamente el fondo del carrusel
+    const images = document.querySelectorAll('.background-carousel img');
+    let currentImageIndex = 0;
+
+    function changeBackground() {
+      images[currentImageIndex].classList.remove('active');
+      currentImageIndex = (currentImageIndex + 1) % images.length;
+      images[currentImageIndex].classList.add('active');
+    }
+
+    setInterval(changeBackground, 5000); // Cambia cada 5 segundos
+
+    // Función para manejar la selección de rol
+    function selectRole(role) {
+      const message = document.getElementById('role-message');
+      message.textContent = `Has seleccionado el perfil de ${role}.`;
+
+      // Redirigir según el rol seleccionado
+      if (role === 'Administrador') {
+        window.location.href = '../control/admin.html'; // Página del Administrador
+      } else if (role === 'Mesero') {
+        window.location.href = '../control/mesero.html'; // Página del Mesero
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro</title>
+   <!-- Favicon con una imagen PNG -->
+   <link rel="icon" href="../vista/img/logo2.png" type="image/png">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: white;
+        overflow: hidden;
+    }
+
+    .carousel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+    .carousel img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+    }
+
+    .carousel img.active {
+        opacity: 1;
+    }
+
+    .container {
+        max-width: 400px;
+        width: 100%;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        text-align: center;
+    }
+
+    .container h2 {
+        margin-bottom: 20px;
+        font-size: 1.8em;
+    }
+
+    .container input {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #555;
+        border-radius: 5px;
+        background-color: #333;
+        color: white;
+    }
+
+    .container button {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .container button:hover {
+        background-color: #0056b3;
+    }
+
+    .visibility-toggle {
+        position: absolute;
+        right: 20px;
+        top: 35px;
+        cursor: pointer;
+        color: white;
+    }
+
+    a {
+        text-decoration: none;
+        display: block;
+        margin-top: 10px;
+        color: #76ff03;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    .message {
+        margin-top: 10px;
+        color: lightgreen;
+    }
+
+    .error-message {
+        color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel">
+    <img src="https://mbmarcobeteta.com/wp-content/uploads/2024/05/310733529_1194450411421515_768841319641346365_n.webp" alt="Imagen 1" class="active">
+    <img src="https://www.abasturhub.com/img/blog/mejores-restaurantes---diseno-sin-titulo.jpg" alt="Imagen 2">
+    <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/24/61/61/16/caption.jpg?w=900&h=500&s=1" alt="Imagen 3">
+  </div>
+
+  <div class="container">
+    <h2>Registro</h2>
+    <form id="registerForm">
+      <div class="error-message" id="errorMessage"></div>
+      <label for="username">Nombre de usuario</label>
+      <input type="text" id="username" placeholder="Ingrese su nombre" required pattern="[a-zA-Z]+" title="Solo letras">
+      
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" placeholder="Ingrese su correo" required>
+      
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" placeholder="6 números" required pattern="\d{6}" title="Debe contener exactamente 6 números">
+      
+      <button type="submit" id="registerButton">Registrar</button>
+      <button type="button" id="backButton" onclick="window.location.href='index.html'">Atrás</button>
+      <div id="successMessage" class="message"></div>
+    </form>
+  </div>
+
+  <script type="module">
+    // Configuración de Firebase
+    const firebaseConfig = {
+  apiKey: "AIzaSyCGtG6vNoWUqkq94tYUevF875kJ7dBT7jE",
+  authDomain: "restaurateceo.firebaseapp.com",
+  databaseURL: "https://restaurateceo-default-rtdb.firebaseio.com",
+  projectId: "restaurateceo",
+  storageBucket: "restaurateceo.firebasestorage.app",
+  messagingSenderId: "439218262692",
+  appId: "1:439218262692:web:d2dee432cc762e7f188c31",
+  measurementId: "G-GKH9M75BCL"
+};
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const registerForm = document.getElementById('registerForm');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+
+    // Registro de usuario con manejo de errores
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !email || !password) {
+        errorMessage.textContent = 'Faltan datos.';
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await setDoc(doc(db, 'users', user.uid), {
+          email: email,
+          username: username,
+          createdAt: new Date().toISOString()
+        });
+
+        successMessage.textContent = 'Usuario registrado exitosamente.';
+        errorMessage.textContent = '';
+        registerForm.reset();
+        window.location.href = 'index.html';
+      } catch (error) {
+        // Manejo de errores detallado
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage.textContent = 'El correo electrónico ya está registrado. Por favor, use otro.'; 
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage.textContent = 'El correo ingresado no es válido.';
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        } else {
+          errorMessage.textContent = `Error: ${error.message}`;
+        }
+        successMessage.textContent = '';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pedidos</title>
+  <link rel="icon" href="../vista/img/logo2.png" type="image/png" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #FAF3E0, #FFE4B5);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+      border-radius: 15px;
+    }
+    h1, h2 {
+      color: #6F4F1F;
+      margin: 0;
+    }
+
+    /* Estilos para inputs y botones */
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border: 1px solid #6F4F1F;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      font-weight: bold;
+      margin: 5px;
+      font-size: 16px;
+      transition: background 0.3s, transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .btn-print {
+      background: #28A745;
+      color: white;
+    }
+    .btn-print:hover {
+      background: #218838;
+    }
+    .btn-delete {
+      background: #FF4D4D;
+      color: white;
+    }
+    .btn-delete:hover {
+      background: #FF1A1A;
+    }
+    .btn-edit {
+      background: #3498DB;
+      color: white;
+    }
+    .btn-edit:hover {
+      background: #2980B9;
+    }
+    .btn-back {
+      background: #6F4F1F;
+      color: white;
+    }
+    .btn-back:hover {
+      background: #5A3E1A;
+    }
+    .btn-map {
+      background: #007BFF;
+      color: white;
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 5px;
+      font-size: 16px;
+      transition: background 0.3s, transform 0.2s;
+      cursor: pointer;
+    }
+    .btn-map:hover {
+      background: #0056b3;
+      transform: scale(1.05);
+    }
+
+    /* Encabezado con flexbox para alinear a izquierda y derecha */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+    .header-left img {
+      width: 80px;
+      margin-right: 15px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    /* ============ ESTILOS PARA LAS TARJETAS DE PRODUCTOS ============ */
+    .products-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    .product-card {
+      width: 220px;
+      border: 2px solid #6F4F1F;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      position: relative;
+    }
+    .product-card h3 {
+      margin-top: 0;
+      color: #6F4F1F;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .product-card p {
+      margin: 5px 0;
+      font-size: 14px;
+      line-height: 1.4em;
+    }
+    .product-card label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+    .precio-dinamico {
+      font-weight: bold;
+    }
+
+    /* ============ ESTILOS PARA LA TABLA DE PEDIDOS ============ */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 2px solid #6F4F1F;
+      padding: 15px;
+      text-align: center;
+      font-size: 16px;
+    }
+    th {
+      background: #6F4F1F;
+      color: white;
+      font-weight: 600;
+    }
+
+    /* Estilo de la notificación emergente */
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #28A745;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transform: translateX(100%);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .notification.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <div class="container">
+
+    <!-- Encabezado con logo e información a la izquierda, y botones a la derecha -->
+    <div class="header">
+      <div class="header-left">
+        <img src="../vista/img/logo.png" alt="Logo">
+        <h1>Pedidos</h1>
+      </div>
+      <div class="header-right">
+        <a href="../modelo/mesas.php" class="btn-map">Atrás</button>
+        <a href="../control/maqueta.html" class="btn-map">Maqueta</a>
+      </div>
+    </div>
+
+    <div>
+      <label>Mesa: <input type="number" id="mesa" min="1" /></label>
+      <label>Precio Total: <input type="text" id="precioTotal" readonly /></label>
+    </div>
+    <button onclick="agregarPedido()">Agregar Pedido</button>
+
+    <h2>Productos</h2>
+    <div class="products-container" id="productosCards"></div>
+
+    <h2>Pedidos</h2>
+    <table id="pedidosTable">
+      <thead>
+        <tr>
+          <th>Mesa</th>
+          <th>Pedido</th>
+          <th>Precio Total</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="pedidosBody"></tbody>
+    </table>
+
+    <!-- Notificación emergente -->
+    <div class="notification" id="notification"></div>
+  </div>
+
+  <script>
+    let productos = JSON.parse(localStorage.getItem('productos')) || [];
+    let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+
+    // Función para cargar productos
+    function cargarProductos() {
+      const container = document.getElementById('productosCards');
+      container.innerHTML = '';
+      
+      productos.forEach((producto) => {
+        const card = document.createElement('div');
+        card.classList.add('product-card');
+
+        const especificacionesOptions = producto.especificaciones.map(esp => 
+          `<option value="${esp}|${producto.precio}">${esp}</option>`
+        ).join("");
+
+        card.innerHTML = `
+          <h3>${producto.nombre}</h3>
+          <label>
+            Especificación:
+            <select onchange="cambiarEspecificacion(event)">
+              <option value="">--Seleccionar--</option>
+              ${especificacionesOptions}
+            </select>
+          </label>
+          <p><strong>Precio:</strong> $<span class="precio-dinamico">0</span></p>
+          <label>
+            Cantidad:
+            <input type="number" min="0" value="0" onchange="actualizarTotal()" />
+          </label>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Función para cambiar la especificación del producto
+    function cambiarEspecificacion(event) {
+      const select = event.target;
+      const card = select.closest('.product-card');
+      const [_, specPrice] = select.value.split('|');
+
+      card.setAttribute('data-precio', specPrice || 0);
+      card.querySelector('.precio-dinamico').textContent = specPrice || 0;
+      actualizarTotal();
+    }
+
+    // Función para actualizar el total del pedido
+    function actualizarTotal() {
+      let total = 0;
+      document.querySelectorAll('.product-card').forEach(card => {
+        const price = parseFloat(card.getAttribute('data-precio')) || 0;
+        const quantity = parseFloat(card.querySelector('input[type="number"]').value) || 0;
+        total += price * quantity;
+      });
+      document.getElementById('precioTotal').value = `$${total.toFixed(2)}`;
+    }
+
+    // Función para agregar un pedido
+    function agregarPedido() {
+      const mesa = document.getElementById('mesa').value;
+      if (!mesa) {
+        alert('Por favor, ingresa el número de mesa.');
+        return;
+      }
+      
+      let total = 0;
+      const productosPedidos = [];
+      document.querySelectorAll('.product-card').forEach(card => {
+        const quantity = parseFloat(card.querySelector('input[type="number"]').value) || 0;
+        const price = parseFloat(card.getAttribute('data-precio')) || 0;
+        if (quantity > 0) {
+          productosPedidos.push({
+            nombre: card.querySelector('h3').textContent,
+            cantidad: quantity,
+            precioUnitario: price,
+            total: price * quantity
+          });
+          total += price * quantity;
+        }
+      });
+
+      if (productosPedidos.length > 0) {
+        pedidos.push({ mesa, productos: productosPedidos, total });
+        localStorage.setItem('pedidos', JSON.stringify(pedidos));
+        mostrarPedidos();
+      }
+    }
+
+    // Función para mostrar los pedidos en la tabla
+    function mostrarPedidos() {
+      const pedidosBody = document.getElementById('pedidosBody');
+      pedidosBody.innerHTML = '';
+      
+      pedidos.forEach((pedido, index) => {
+        const tr = document.createElement('tr');
+        const productosStr = pedido.productos.map(p => `${p.nombre} (${p.cantidad})`).join(", ");
+
+        tr.innerHTML = `
+          <td>${pedido.mesa}</td>
+          <td>${productosStr}</td>
+          <td>$${pedido.total.toFixed(2)}</td>
+          <td>
+            <button class="btn-edit" onclick="editarPedido(${index})">Editar</button>
+            <button class="btn-print" onclick="generarTicket(${index})">Ticket</button>
+            <button class="btn-delete" onclick="eliminarPedido(${index})">Eliminar</button>
+          </td>
+        `;
+        pedidosBody.appendChild(tr);
+      });
+    }
+
+    // Función para editar un pedido
+    function editarPedido(index) {
+      const pedido = pedidos[index];
+      if (!pedido) return;
+
+      document.getElementById('mesa').value = pedido.mesa;
+      // Reiniciamos los campos
+      document.querySelectorAll('.product-card').forEach(card => {
+        card.querySelector('input[type="number"]').value = 0;
+        card.removeAttribute('data-precio');
+        card.querySelector('.precio-dinamico').textContent = "0";
+      });
+
+      // Cargamos la info del pedido en las tarjetas
+      pedido.productos.forEach(prod => {
+        document.querySelectorAll('.product-card').forEach(card => {
+          if (card.querySelector('h3').textContent === prod.nombre) {
+            card.querySelector('input[type="number"]').value = prod.cantidad;
+            card.setAttribute('data-precio', prod.precioUnitario);
+            card.querySelector('.precio-dinamico').textContent = prod.precioUnitario;
+          }
+        });
+      });
+
+      actualizarTotal();
+      // Eliminamos el pedido original para "reemplazarlo" al volver a agregar
+      pedidos.splice(index, 1);
+      localStorage.setItem('pedidos', JSON.stringify(pedidos));
+      mostrarPedidos();
+    }
+
+    // Función para generar un ticket
+    function generarTicket(index) {
+      const pedido = pedidos[index];
+      if (!pedido) return;
+      let ticket = `*** TICKET ***\nMesa: ${pedido.mesa}\n`;
+      pedido.productos.forEach(prod => {
+        ticket += `${prod.nombre} x${prod.cantidad} - $${prod.total.toFixed(2)}\n`;
+      });
+      ticket += `Total: $${pedido.total.toFixed(2)}\n*****************\n`;
+      alert(ticket);
+    }
+
+    // Función para eliminar un pedido
+    function eliminarPedido(index) {
+      if (confirm('¿Eliminar pedido?')) {
+        pedidos.splice(index, 1);
+        localStorage.setItem('pedidos', JSON.stringify(pedidos));
+        mostrarPedidos();
+      }
+    }
+
+    // Función para mostrar la notificación emergente
+    function mostrarNotificacion(mensaje) {
+      const notification = document.getElementById('notification');
+      notification.textContent = mensaje;
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000); // La notificación desaparece después de 3 segundos
+    }
+
+    // Escuchar cambios en localStorage
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'mensaje') {
+        const mensaje = event.newValue;
+        mostrarNotificacion(mensaje);
+        localStorage.removeItem('mensaje'); // Eliminar el mensaje después de mostrarlo
+      }
+    });
+
+    // Cargar datos al iniciar
+    cargarProductos();
+    mostrarPedidos();
+  </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Cambios</title>
+     <!-- Favicon con una imagen PNG -->
+     <link rel="icon" href="../vista/img/logo2.png" type="image/png">
+
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            background-color:rgb(208, 210, 213);
+            margin: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #FFF;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2C3E50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #2C3E50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #ECF0F1;
+        }
+        tr:hover {
+            background-color: #BDC3C7;
+        }
+        .button-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #D88A4D;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #B85C38;
+        }
+        .btn-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498DB;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .btn-link:hover {
+            background-color: #2980B9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Historial de Cambios</h1>
+        <p>Aquí puedes ver los últimos cambios realizados en el sistema.</p>
+        <table id="tabla-cambios">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Detalles</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las filas se cargarán dinámicamente -->
+            </tbody>
+        </table>
+
+        <div class="button-container">
+            <button class="btn" onclick="agregarCambio()">Agregar Cambio</button>
+            <button class="btn" onclick="editarCambio()">Editar Cambio</button>
+            <a href="../control/admin.html" class="btn-link">Ir a Inicio</a>
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener los cambios guardados en LocalStorage
+        function obtenerCambios() {
+            const cambios = localStorage.getItem("historialCambios");
+            return cambios ? JSON.parse(cambios) : [];
+        }
+
+        // Función para guardar los cambios en LocalStorage
+        function guardarCambios(cambios) {
+            localStorage.setItem("historialCambios", JSON.stringify(cambios));
+        }
+
+        // Función para renderizar la tabla con los datos actuales
+        function renderizarTabla() {
+            const cambios = obtenerCambios();
+            const tbody = document.getElementById("tabla-cambios").querySelector("tbody");
+            tbody.innerHTML = ""; // Limpiar la tabla
+
+            cambios.forEach((cambio, index) => {
+                const fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${cambio.fecha}</td>
+                    <td>${cambio.usuario}</td>
+                    <td>${cambio.accion}</td>
+                    <td>${cambio.detalles}</td>
+                `;
+                tbody.appendChild(fila);
+            });
+        }
+
+        // Función para agregar un nuevo cambio
+        function agregarCambio() {
+            const fecha = obtenerFechaActual(); // Generar la fecha automáticamente
+            const usuario = prompt("Ingrese el nombre del usuario:");
+            const accion = prompt("Ingrese la acción realizada:");
+            const detalles = prompt("Ingrese los detalles de la acción:");
+
+            if (usuario && accion && detalles) {
+                const cambios = obtenerCambios();
+                cambios.push({ fecha, usuario, accion, detalles }); // Agregar el nuevo cambio
+                guardarCambios(cambios); // Guardar en LocalStorage
+                renderizarTabla(); // Actualizar la tabla
+                alert("Cambio agregado exitosamente.");
+            } else {
+                alert("Debe completar todos los campos para agregar un cambio.");
+            }
+        }
+
+        // Función para obtener la fecha actual en formato YYYY-MM-DD
+        function obtenerFechaActual() {
+            const hoy = new Date();
+            const año = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Mes comienza desde 0
+            const día = String(hoy.getDate()).padStart(2, '0');
+            return `${año}-${mes}-${día}`;
+        }
+
+        // Función para editar un cambio existente
+        function editarCambio() {
+            const indice = prompt("Ingrese el número de fila a editar (comenzando desde 1):");
+            const cambios = obtenerCambios();
+
+            if (indice > 0 && indice <= cambios.length) {
+                const cambio = cambios[indice - 1];
+                const nuevaFecha = prompt("Ingrese la nueva fecha (YYYY-MM-DD):", cambio.fecha);
+                const nuevoUsuario = prompt("Ingrese el nuevo usuario:", cambio.usuario);
+                const nuevaAccion = prompt("Ingrese la nueva acción:", cambio.accion);
+                const nuevosDetalles = prompt("Ingrese los nuevos detalles:", cambio.detalles);
+
+                if (nuevaFecha && nuevoUsuario && nuevaAccion && nuevosDetalles) {
+                    // Actualizar el cambio seleccionado
+                    cambios[indice - 1] = { fecha: nuevaFecha, usuario: nuevoUsuario, accion: nuevaAccion, detalles: nuevosDetalles };
+                    guardarCambios(cambios); // Guardar cambios actualizados
+                    renderizarTabla(); // Actualizar la tabla
+                    alert("Cambio editado exitosamente.");
+                } else {
+                    alert("Debe completar todos los campos para editar el cambio.");
+                }
+            } else {
+                alert("Número de fila inválido.");
+            }
+        }
+
+        // Renderizar la tabla al cargar la página
+        document.addEventListener("DOMContentLoaded", renderizarTabla);
+    </script>
+</body>
+</html>
